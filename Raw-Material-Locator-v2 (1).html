@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Material Finder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Nunito', 'Segoe UI', sans-serif;
+    background: #1B2A4A;
+    min-height: 100vh;
+    width: 100%;
+    user-select: none;
+  }
+
+  .container {
+    max-width: 460px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .header {
+    padding-top: 60px;
+    text-align: center;
+    margin-bottom: 24px;
+    flex-shrink: 0;
+  }
+
+  .logo { font-size: 56px; margin-bottom: 6px; }
+  .app-name { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .app-count { font-size: 14px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+
+  .search-area {
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 22px 20px;
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    border: 3px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    outline: none;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .search-input::placeholder { color: rgba(255,255,255,0.3); text-transform: none; letter-spacing: 0; font-family: 'Nunito', sans-serif; font-weight: 600; font-size: 18px; }
+  .search-input:focus { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    width: 100%;
+  }
+
+  .search-btn {
+    flex: 1;
+    padding: 20px;
+    font-size: 22px;
+    font-weight: 800;
+    background: #E67E22;
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+  }
+  .search-btn:active { background: #CF6D17; }
+
+  .clear-btn {
+    width: 64px;
+    padding: 20px 0;
+    font-size: 22px;
+    font-weight: 800;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    display: none;
+  }
+  .clear-btn.show { display: block; }
+  .clear-btn:active { background: rgba(255,255,255,0.15); }
+
+  .result-area {
+    width: 100%;
+    margin-top: 24px;
+    padding-bottom: 40px;
+  }
+
+  .result-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px 22px 24px;
+    text-align: center;
+    animation: slideUp 0.25s ease-out;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-code {
+    font-size: 28px;
+    font-weight: 800;
+    font-family: 'Courier New', monospace;
+    color: #1B4F72;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    word-break: break-all;
+  }
+  .result-desc {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .result-pack {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: 700;
+    color: #555;
+    background: #EDF2F7;
+    padding: 8px 16px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+  }
+  .result-pack span { color: #1B4F72; }
+
+  .loc-box {
+    background: #FFF8E1;
+    border-radius: 16px;
+    padding: 14px 18px;
+    border: 2px solid #F0C040;
+    margin-bottom: 10px;
+  }
+  .loc-box:last-child { margin-bottom: 0; }
+  .loc-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #B07800;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .loc-text {
+    font-size: 22px;
+    font-weight: 800;
+    color: #E67E22;
+  }
+
+  .no-loc {
+    background: #FDEDEC;
+    border: 2px solid #E6B0AA;
+    border-radius: 16px;
+    padding: 14px 18px;
+  }
+  .no-loc .loc-label { color: #922B21; }
+  .no-loc .loc-text { color: #C0392B; font-size: 18px; }
+
+  .not-found-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px 22px;
+    text-align: center;
+    animation: slideUp 0.25s ease-out;
+  }
+  .not-found-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #C0392B;
+    margin-bottom: 6px;
+  }
+  .not-found-sub {
+    font-size: 17px;
+    color: #666;
+    word-break: break-all;
+  }
+
+  .gear-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    cursor: pointer;
+    opacity: 0.4;
+    z-index: 50;
+  }
+  .gear-btn:active { opacity: 0.7; }
+
+  .admin-overlay {
+    position: fixed;
+    inset: 0;
+    background: #1B2A4A;
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+  }
+  .admin-overlay.active { display: flex; }
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+  }
+  .admin-title { font-size: 22px; font-weight: 800; color: #fff; }
+  .admin-lock-btn {
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .admin-toolbar {
+    padding: 14px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .admin-filter {
+    flex: 1;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    outline: none;
+  }
+  .admin-filter::placeholder { color: rgba(255,255,255,0.3); }
+  .admin-count-bar { font-size: 14px; color: rgba(255,255,255,0.4); font-weight: 700; white-space: nowrap; }
+
+  .admin-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-row {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+  }
+  .admin-row-code {
+    font-size: 16px;
+    font-weight: 800;
+    font-family: 'Courier New', monospace;
+    color: #E67E22;
+    margin-bottom: 4px;
+  }
+  .admin-row-desc {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .admin-row-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .admin-row-tag {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.5);
+  }
+  .admin-row-tag.loc { color: #F0C040; background: rgba(240,192,64,0.12); }
+  .admin-row-tag.pack { color: #85C1E9; background: rgba(133,193,233,0.12); }
+
+  .pin-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    padding: 24px;
+  }
+  .pin-overlay.active { display: flex; }
+  .pin-card {
+    background: #1B2A4A;
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+    width: 100%;
+    max-width: 340px;
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+  .pin-title { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 16px; }
+  .pin-box {
+    width: 100%;
+    padding: 20px;
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 16px;
+    color: #fff;
+    outline: none;
+    letter-spacing: 12px;
+    font-family: 'Nunito', sans-serif;
+    margin-bottom: 10px;
+  }
+  .pin-err { color: #E74C3C; font-weight: 700; font-size: 16px; display: none; margin-bottom: 10px; }
+  .pin-err.show { display: block; }
+  .pin-btns { display: flex; gap: 12px; }
+  .pin-ok {
+    flex: 1;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 800;
+    background: #27AE60;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+  }
+  .pin-cancel-btn {
+    flex: 1;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+  }
+  .pin-hint { font-size: 13px; color: rgba(255,255,255,0.35); margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="logo">📦</div>
+    <div class="app-name">Material Finder</div>
+    <div class="app-count">528 materials loaded</div>
+  </div>
+
+  <div class="search-area">
+    <input class="search-input" id="searchInput" type="text" placeholder="Enter material code..." autocomplete="off" autocorrect="off" spellcheck="false" autofocus>
+    <div class="btn-row">
+      <button class="search-btn" id="searchBtn">Search</button>
+      <button class="clear-btn" id="clearBtn">✕</button>
+    </div>
+  </div>
+
+  <div class="result-area" id="resultArea"></div>
+</div>
+
+<button class="gear-btn" id="gearBtn">⚙️</button>
+
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-card">
+    <div class="pin-title">🔐 Enter Admin PIN</div>
+    <input type="password" inputmode="numeric" class="pin-box" id="pinInput" placeholder="• • • •" maxlength="8">
+    <div class="pin-err" id="pinErr">Wrong PIN</div>
+    <div class="pin-btns">
+      <button class="pin-ok" id="pinOk">Unlock</button>
+      <button class="pin-cancel-btn" id="pinCancel">Cancel</button>
+    </div>
+    <div class="pin-hint">Authorised personnel only</div>
+  </div>
+</div>
+
+<div class="admin-overlay" id="adminOverlay">
+  <div class="admin-header">
+    <span class="admin-title">📋 All Materials</span>
+    <button class="admin-lock-btn" id="adminLockBtn">🔒 Lock</button>
+  </div>
+  <div class="admin-toolbar">
+    <input class="admin-filter" id="adminFilter" type="text" placeholder="Filter by code or description..." autocomplete="off">
+    <span class="admin-count-bar" id="adminCountBar"></span>
+  </div>
+  <div class="admin-list" id="adminList"></div>
+</div>
+
+<script>
+const MATERIALS = [{"code": "2942195E", "description": "30% CAB 381-0.1 SOLUTION", "packSize": "DRUM", "location": "B1 F 11 & MFG Floor"}, {"code": "2946738X", "description": "CAB 551-0.2 SOLUTION", "packSize": "DRUM", "location": "B1 F 14"}, {"code": "32432693-KG", "description": "Decorama M Black Tinter (LVOC)", "packSize": "PAIL", "location": "QC LAB TINT ROOM"}, {"code": "4980073X-180KG", "description": "FLEETSHIELD 2K JET RED BASE 180KG", "packSize": "EA", "location": "B4 B"}, {"code": "4980373E", "description": "HC-62-8323   ACRYLAMIDE ACRYLIC RESIN", "packSize": "DRUM", "location": "No location assigned"}, {"code": "4981039E", "description": "MC 7 CURING AGENT", "packSize": "DRUM", "location": "B1 G 9"}, {"code": "50GL800A-1000KG", "description": "PREM W/B D&T LS STD BASE (PTRS) INTERM.", "packSize": "IBC", "location": "B1 B4 A"}, {"code": "50GL805A-800KG", "description": "PREM W/B D&T LS CLR BASE (PTRS) INTERM.", "packSize": "IBC", "location": "No location assigned"}, {"code": "50HG301A-180KG", "description": "PREMIUM W/B METAL PROT GLOSS VW - 180KG", "packSize": "EA", "location": "CORROSIVES"}, {"code": "50HG301A-20KG", "description": "PREMIUM W/B METAL PROT GLOSS VW - 20KG", "packSize": "PAIL", "location": "CORROSIVES"}, {"code": "50HG301X-180KG", "description": "PREMIUM W/B METAL PROT GLOSS VW - 180KG", "packSize": "EA", "location": "B4 B"}, {"code": "50HG301X-20KG", "description": "PREMIUM W/B METAL PROT GLOSS VW - 20KG", "packSize": "EA", "location": "QC LAB RACKS"}, {"code": "50HS301X-180KG", "description": "PREM W/B METAL PROT S/GLOSS VW - 180KG", "packSize": "EA", "location": "B4 B"}, {"code": "50HS301X-20KG", "description": "PREM W/B METAL PROT S/GLOSS VW - 20KG", "packSize": "PAIL", "location": "CORROSIVES"}, {"code": "50XG301A-160KG", "description": "PREM W/B INT MULTI SURFACE GLOSS VW INT", "packSize": "EA", "location": "B4 B"}, {"code": "50XG301A-20KG", "description": "PREM W/B INT MULTI SURFACE GLOSS VW INT", "packSize": "PAIL", "location": "B4 B"}, {"code": "56551894-4L", "description": "PC TINT 844-2852 OY ORG YLW 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563230-4L", "description": "PC TINT 844-5558 PG PHTALO GREEN 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563231-4L", "description": "PC TINT 844-0451 QR QUIN RED 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563232-4L", "description": "PC TINT 844-0061 TW TITM WHITE 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563234-4L", "description": "PC TINT 844-0982 UO LF ORANGE 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563235-4L", "description": "PC TINT 844-1063 RO ROX 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563236-4L", "description": "PCOBS TINT 844-1352 BU BURNT UMBER 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563237-4L", "description": "PC TINT 844-1863 YO YLW OX 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563239-4L", "description": "PC TINT 844-2555 MY L/F MED YLW 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563241-4L", "description": "PC TINT 844-7262 PB PHTALO BLUE 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563242-4L", "description": "PC TINT 844-9451 QV QUINACRIDONE VL 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "56563243-4L", "description": "PC TINT 844-9955 LB LAMP BLK 4L", "packSize": "EA", "location": "QC LAB RACK 1"}, {"code": "5980117E", "description": "HC-46-8939   ACRYLIC RESIN", "packSize": "DRUM", "location": "B1 G 14"}, {"code": "7980202E", "description": "DULUX U/F RESIN", "packSize": "DRUM", "location": "B1 G 13"}, {"code": "9972239E", "description": "DLX CLEAN UP SOLVENT", "packSize": "DRUM", "location": "STK 9"}, {"code": "9973094E", "description": "50PC DER 664 INTERMEDIATE", "packSize": "DRUM", "location": "B1 H 9"}, {"code": "9973094X", "description": "37PC DER 664 INTERMEDIATE", "packSize": "DRUM", "location": "No location assigned"}, {"code": "K0001A", "description": "N-BUTANOL", "packSize": "DRUM", "location": "BUND 2"}, {"code": "K0001B", "description": "CORSOL EBA", "packSize": "DRUM", "location": "BUND 2"}, {"code": "K0002A", "description": "ETHYL ACETATE", "packSize": "DRUM", "location": "BUND 2"}, {"code": "K0004A", "description": "N-BUTYL ACETATE", "packSize": "DRUM", "location": "BUND 2"}, {"code": "K0012", "description": "SHELL X55", "packSize": "DRUM", "location": "BUND 2"}, {"code": "K0016B", "description": "BUTYL GLYCOL ETHER EGBE/ BUTYL GLYSOLV", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0017", "description": "GLYSOLV DPM", "packSize": "DRUM", "location": "BUND 2"}, {"code": "K0019", "description": "COASOL", "packSize": "IBC", "location": "B1 I (FENCE)"}, {"code": "K0021", "description": "ESTER EEP", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0022", "description": "SOLVENT 100", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0023", "description": "Recosol Stat G/IP CLEAN LX/SK-ISOL G", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0026", "description": "SOLVEX 2026/X3B/RECOSOL 30B", "packSize": "DRUM", "location": "STK 12"}, {"code": "K0027A", "description": "METHYL ETHYL KETONE (MEK)", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0030A", "description": "CYCLOHEXANONE", "packSize": "DRUM", "location": "BUND 2"}, {"code": "K0031A", "description": "ISO-PROPYL ALCOHOL", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0032", "description": "PEG 200", "packSize": "DRUM", "location": "B1 A3 B"}, {"code": "Key Number", "description": "Material Description", "packSize": "Pack Size (eg. 25kg, 180KG, 1000KG)", "location": "Storage Location"}, {"code": "K0033A", "description": "ETHANOL(INDUSTRIAL)", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0042", "description": "ISO-BUTANOL", "packSize": "DRUM", "location": "MFG Floor"}, {"code": "K0042A", "description": "GLYSOLV PM (METHOXY PROPANOL)", "packSize": "DRUM", "location": "BUND 2"}, {"code": "K0054", "description": "OPTIFILM ENHANCER 300 / TXIB / RTC-16", "packSize": "DRUM", "location": "B1 C 1"}, {"code": "K0055", "description": "METHYL ISOBUTYL KETONE (MIBK)", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0059", "description": "TRIPROPYLENE GLYCOL", "packSize": "DRUM", "location": "AFL"}, {"code": "K0061", "description": "SOLVEX  150", "packSize": "DRUM", "location": "BUND 2"}, {"code": "K0062A", "description": "METHYL N-AMYL KETONE", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0064A", "description": "BUTYL DI-GLYSOLV / BUTYL CARBITOL", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0069", "description": "EXXSOL D40/ASOLVIOO22 D40", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0081", "description": "DOWANOL DPNB", "packSize": "DRUM", "location": "B1 A1 B"}, {"code": "K0081A", "description": "DIPROPYLENE GLYCOL MONO-BUTYL ETHER", "packSize": "KG", "location": "No location assigned"}, {"code": "K0082B", "description": "WHITE SPIRIT", "packSize": "DRUM", "location": "STK 14"}, {"code": "K0083A", "description": "PROP.GLYCOL MONOMETHYLETHER AC", "packSize": "DRUM", "location": "B2 & MFG & QC LAB RACKS"}, {"code": "K0088A", "description": "DBE DIBASIC ESTERS", "packSize": "DRUM", "location": "BUND 2 & MFG Floor"}, {"code": "K0092", "description": "ACETONE", "packSize": "DRUM", "location": "BUND 2 & QC LAB RACKS"}, {"code": "K0098B", "description": "DIACETONE ALCOHOL", "packSize": "DRUM", "location": "BUND 2"}, {"code": "K0104A", "description": "BENTONE SD-1", "packSize": "BAG", "location": "RM E"}, {"code": "K0105-25KG", "description": "OMYACARB 20", "packSize": "BAG", "location": "RM A"}, {"code": "K0115", "description": "SYLOID 308", "packSize": "BAG", "location": "RM D"}, {"code": "K0124-25KG", "description": "OMYACARB 40", "packSize": "BAG", "location": "RM F"}, {"code": "K0124A", "description": "ACEMATT OK 412", "packSize": "BAG", "location": "RM E"}, {"code": "K0131", "description": "ZINC PHOSPHATE ZP10", "packSize": "BAG", "location": "RM F"}, {"code": "K0131A", "description": "AEROSIL 200 / CABOSIL M5", "packSize": "BAG", "location": "RM C"}, {"code": "K0135A", "description": "HAKUENKA CCR", "packSize": "BAG", "location": "RM E"}, {"code": "K0137", "description": "AEROSIL R972", "packSize": "BAG", "location": "RM E"}, {"code": "K0139A", "description": "CLAY ASP 400 P", "packSize": "BAG", "location": "RM E"}, {"code": "K0140-22.68KG", "description": "SATINTONE 5HB", "packSize": "BAG", "location": "RM E"}, {"code": "K0146A", "description": "AEROSIL 380", "packSize": "BAG", "location": "RM F"}, {"code": "K0151", "description": "ACEMATT TS 100", "packSize": "BAG", "location": "RM F"}, {"code": "K0153A", "description": "BENTONE SD-2", "packSize": "BAG", "location": "RM E"}, {"code": "K0161A-25KG", "description": "MICROBYTES 7/ MICROMIN 20", "packSize": "BAG", "location": "RM F"}, {"code": "K0161A-500KG", "description": "Microbytes 7/ Micromin 20/Minbar 25A", "packSize": "BULK BAG", "location": "RM RR"}, {"code": "K0161B-25KG", "description": "MILBAR C7", "packSize": "BAG", "location": "RM F"}, {"code": "K0161B-500KG", "description": "MILBAR C7", "packSize": "BULK BAG", "location": "Roller Racking"}, {"code": "K0163A", "description": "BENTONE 38 ( ORGANOCLAY BP-186)", "packSize": "BAG", "location": "RM B"}, {"code": "K0167", "description": "SYLOID 161", "packSize": "BAG", "location": "RM E"}, {"code": "K0174A", "description": "TI-PURE R960", "packSize": "BAG", "location": "RM E"}, {"code": "K0175", "description": "E-SPHERES SL150", "packSize": "BAG", "location": "RM E"}, {"code": "K0180", "description": "BENTONE 34", "packSize": "BAG", "location": "RM E"}, {"code": "K0190-25KG", "description": "ZINC OXIDE (HIGHLY REFINED) - Z-TECH", "packSize": "BAG", "location": "RM E"}, {"code": "K0200A", "description": "HOSTAPERM BLUE B2G 03", "packSize": "BAG", "location": "RM D"}, {"code": "K0203", "description": "HELIOGEN BLUE L7101F", "packSize": "BAG", "location": "RM D"}, {"code": "K0214", "description": "ULTRAMARINE BLUE PREMIER RM", "packSize": "BAG", "location": "RM D & RM I"}, {"code": "K0219", "description": "010921COLORTREND BLUEPANTONE300U", "packSize": "DRUM", "location": "QC LAB TINT ROOM"}, {"code": "K0235", "description": "HELIOGEN BLUE L6875F", "packSize": "BAG", "location": "RMD"}, {"code": "K0262", "description": "9427262 AK942 BLUE D23", "packSize": "CAN", "location": "BUND 4"}, {"code": "K0278", "description": "788-1078 DEEP BLUE CONCENTRATE", "packSize": "DRUM", "location": "RM S"}, {"code": "K0296", "description": "019018 COLORTREND E PHTHALO BLUE", "packSize": "PAIL", "location": "BUND 4 & QC LAB RACK 3"}, {"code": "Key Number", "description": "Material Description", "packSize": "Pack Size (eg. 25kg, 180KG, 1000KG)", "location": "Storage Location"}, {"code": "K0324", "description": "BAYFERROX (BLACK) 303T", "packSize": "BAG", "location": "RM C"}, {"code": "K0327", "description": "SHEPHERD BLACK 1G", "packSize": "BAG", "location": "RM C"}, {"code": "K0331", "description": "PW603 TIMBASOL WA CARBON BLACK", "packSize": "PAIL", "location": "RM K"}, {"code": "K0333", "description": "BAYFERROX 318M", "packSize": "BAG", "location": "RM C"}, {"code": "K0333-25KG", "description": "BAYFERROX 318M", "packSize": "BAG", "location": "RMC"}, {"code": "K0334", "description": "MONARCH 430 (CABOT)", "packSize": "BAG", "location": "RM C"}, {"code": "K0337", "description": "019020 COLORTREND E BLACK", "packSize": "DRUM", "location": "BUND 4 & QC LAB RACK 3"}, {"code": "K0340", "description": "BAYFERROX BLACK 318", "packSize": "BAG", "location": "RM C"}, {"code": "K0345", "description": "A/SPEED 2K TNT BLACK RED - 427TT030-0.9L", "packSize": "CAN", "location": "QC LAB RACKS"}, {"code": "K0346", "description": "POWCARBON 3800G", "packSize": "BAG", "location": "RM C"}, {"code": "K0347", "description": "COLORTREND CARBON BLACK (LVOC)", "packSize": "DRUM", "location": "QC LAB TINT ROOM"}, {"code": "K0350", "description": "COLORTREND BLACK K0350  875-9903", "packSize": "PAIL", "location": "RM K & QC LAB TINT ROOM"}, {"code": "K0356", "description": "810-9907 COLORTREND LAMP BLACK B", "packSize": "PAIL", "location": "RMJ , K"}, {"code": "K0361", "description": "MONARCH 1300", "packSize": "BAG", "location": "RM C"}, {"code": "K0363", "description": "IRON POWDER MH300", "packSize": "PAIL", "location": "RM K"}, {"code": "K0365", "description": "9429960 AK 942 HS BLACK D21", "packSize": "CAN", "location": "QC LAB RACK 1"}, {"code": "K0366", "description": "9429955 AK942 BLACK D34", "packSize": "CAN", "location": "BUND 4"}, {"code": "K0415", "description": "810-5511 COLORTREND PHTHALO GREEN D", "packSize": "PAIL", "location": "RM J, K"}, {"code": "K0417", "description": "019017 COLORTREND E PHTHALO GREEN", "packSize": "KG", "location": "BUND 4 & QC LAB RACK 3"}, {"code": "K0419", "description": "A/SPEED 2K CYANINE GREEN - 427T0076-3.7L", "packSize": "CAN", "location": "QC LAB RACKS"}, {"code": "K0430", "description": "9425502 AK 942 GREEN D24", "packSize": "CAN", "location": "QC LAB RACK 1"}, {"code": "K0434", "description": "HELIOGEN GREEN L8690", "packSize": "BAG", "location": "RM D"}, {"code": "K0444", "description": "011085 COLORTREND GREEN GNS", "packSize": "PAIL", "location": "RM K & QC LAB TINT ROOM"}, {"code": "K0445", "description": "CHROME OXIDE GREEN GN", "packSize": "BAG", "location": "RM D"}, {"code": "K0476", "description": "788-1076 CYANINE GREEN CONCENTRATE", "packSize": "DRUM", "location": "RM S"}, {"code": "K0504", "description": "016562 COLORTREND YELL OX TR 40%", "packSize": "DRUM", "location": "B4 B"}, {"code": "K0508", "description": "810-1810 COLORTREND YELLOW OXIDE C", "packSize": "PAIL", "location": "RM J, K"}, {"code": "K0509", "description": "SICOPAL YELLOW L1100", "packSize": "BAG", "location": "RM B"}, {"code": "K0512", "description": "SHEPHERD YELLOW 193 (10C242)", "packSize": "BAG", "location": "RM B"}, {"code": "K0513", "description": "HANSA YELLOW X-MX", "packSize": "BAG", "location": "RM B"}, {"code": "K0529", "description": "NOVOPERM YELLOW HR 70/ MONO YELL 1083", "packSize": "BAG", "location": "RM B"}, {"code": "K0534", "description": "019013 COLORTREND E YELLOW OXIDE", "packSize": "PAIL", "location": "BUND 4 & QC LAB RACK 3"}, {"code": "K0536", "description": "YELLOW 10C229", "packSize": "BAG", "location": "RM B"}, {"code": "K0540", "description": "HANSA YELLOW 10G", "packSize": "BAG", "location": "RM B"}, {"code": "K0541", "description": "874-1826 YELLOW OXIDE XC26", "packSize": "PAIL", "location": "RM K & QC LAB TINT ROOM"}, {"code": "K0542", "description": "016163 ALKYD ORANGE RA", "packSize": "DRUM", "location": "B1 I (FENCE)"}, {"code": "K0544", "description": "ORANGE RA (LVOC)", "packSize": "DRUM", "location": "RM J, K,B1H1"}, {"code": "K0563", "description": "BAYFERROX YELLOW 3920", "packSize": "BAG", "location": "RM B"}, {"code": "K0566", "description": "HOSTAPERM YELLOW H4G", "packSize": "BAG", "location": "RM B"}, {"code": "K0604", "description": "A/SPEED 2K SUPER RED - 427T0039-0.9L", "packSize": "CAN", "location": "QC LAB RACKS"}, {"code": "K0607", "description": "BAYFERROX RED 110M", "packSize": "BAG", "location": "RM C"}, {"code": "K0609", "description": "Novaperm Red F3RK70/TCR17002", "packSize": "BAG", "location": "RM C"}, {"code": "K0639", "description": "BAYFERROX RED 130B", "packSize": "BAG", "location": "RM C"}, {"code": "K0643", "description": "810-1045 COLORTREND RED OXIDE F", "packSize": "PAIL", "location": "RM J, K, LAB"}, {"code": "K0648", "description": "016164 ALKYD CORAL RED C", "packSize": "DRUM", "location": "B1 I (FENCE) & QC LAB RACK"}, {"code": "K0649", "description": "BAYFERROX 222", "packSize": "BAG", "location": "RM C"}, {"code": "K0658A", "description": "010166 K0658A WB RED MAGENTA", "packSize": "PAIL", "location": "RM K & QC LAB TINT ROOM"}, {"code": "K0660", "description": "874-1027 COLORTREND PLUS RED OXIDE XC27", "packSize": "PAIL", "location": "RM K & QC LAB TINT ROOM"}, {"code": "K0664", "description": "010163 COLORTREND CORAL RED C (LVOC)", "packSize": "DRUM", "location": "QC LAB TINT ROOM"}, {"code": "Key Number", "description": "Material Description", "packSize": "Pack Size (eg. 25kg, 180KG, 1000KG)", "location": "Storage Location"}, {"code": "K0666", "description": "PALIOTAN RED L3745", "packSize": "BAG", "location": "RM C"}, {"code": "K0670", "description": "BAYFERROX RED 130M", "packSize": "BAG", "location": "RM C"}, {"code": "K0674", "description": "FLEXOBRITE PINK 304-80 010601", "packSize": "CAN", "location": "QC LAB TINT ROOM"}, {"code": "K0677", "description": "BAYFERROX RED 180M", "packSize": "BAG", "location": "RM C"}, {"code": "K0682", "description": "019012 COLORTREND E RED OXIDE", "packSize": "PAIL", "location": "BUND 4 & QC LAB RACK 3"}, {"code": "K0684", "description": "016166 ALKYD RED OXIDE", "packSize": "PAIL", "location": "BUND 4 & QC LAB RACK 3"}, {"code": "K0695", "description": "TICO RED 652", "packSize": "BAG", "location": "RM C"}, {"code": "K0706", "description": "TRANSPARENT BROWN OXIDE PW604", "packSize": "CAN", "location": "RM J,K"}, {"code": "K0710", "description": "COLORANT BROWN", "packSize": "PAIL", "location": "RM K"}, {"code": "K0752", "description": "019019 COLORTREND E RED VIOLET", "packSize": "KG", "location": "BUND 4"}, {"code": "K0755", "description": "874-8805 COLORTREND PLUS VIOLET XC10", "packSize": "KG", "location": "QC LAB TINT ROOM"}, {"code": "K0913B", "description": "SODIUM CARBONATE", "packSize": "BAG", "location": "RM F"}, {"code": "K0916", "description": "AMMONIUM HYDROXIDE-25%", "packSize": "DRUM", "location": "RM I"}, {"code": "K0938", "description": "EFKA PX 4330", "packSize": "DRUM", "location": "B1 A15 B & MFG Floor"}, {"code": "K0980", "description": "SODIUM BENZOATE", "packSize": "BAG", "location": "RM F"}, {"code": "K0989", "description": "MANGANESE 4%", "packSize": "DRUM", "location": "B1 A21 A & MFG Floor"}, {"code": "K1035", "description": "MOWITAL B30H", "packSize": "BAG", "location": "RM B"}, {"code": "K1107", "description": "FLASH X-150", "packSize": "PAIL", "location": "CORROSIVES & QC LAB"}, {"code": "K1143", "description": "MICROSPERSION 411-50", "packSize": "DRUM", "location": "B1 A7 A"}, {"code": "K1157", "description": "METHYL ETHYL KETOXIME (MEKO)", "packSize": "IBC", "location": "B1 C 2 & MFG Floor"}, {"code": "K1168", "description": "CERECLOR A48 / CHLORINATED PARAFFIN 48", "packSize": "DRUM", "location": "B1 A1 C"}, {"code": "K1181", "description": "SOYA LECITHIN SINGLE BLEACHED", "packSize": "IBC", "location": "B1 C 3"}, {"code": "K1183A", "description": "BORCHI GOL 1670 / BORCHI GOL MA", "packSize": "DRUM", "location": "QC LAB RACKS"}, {"code": "K1201", "description": "RHEOVIS PU1191", "packSize": "DRUM", "location": "B1 B11 A"}, {"code": "K1219", "description": "CERAFAK-106", "packSize": "DRUM", "location": "B1 A18 A"}, {"code": "K1220", "description": "HOSTAVIN 3212", "packSize": "PAIL", "location": "B4 B"}, {"code": "K1222", "description": "TERIC N9", "packSize": "DRUM", "location": "B1 A20 B & MFG Floor"}, {"code": "K1223", "description": "ADVANTEX", "packSize": "DRUM", "location": "MFG Floor"}, {"code": "K1235-25KG", "description": "DP1000 25KG", "packSize": "BAG", "location": "RM A"}, {"code": "K1239", "description": "ROCIMA BT NV2/ ACTICIDE BW20", "packSize": "PAIL", "location": "CORROSIVES"}, {"code": "K1245", "description": "HIESCAT HI-54K", "packSize": "IBC", "location": "CORROSIVES"}, {"code": "K1252", "description": "MPA 60/Y25X(XYLENE)/RHEOBYK-7589", "packSize": "DRUM", "location": "NC Store"}, {"code": "K1258", "description": "ACRYSOL RM-5000", "packSize": "DRUM", "location": "B1 I (FENCE)"}, {"code": "K1264", "description": "HORDARESIN NP70/CHLORINATED PARAFFIN 70", "packSize": "BAG", "location": "RM E"}, {"code": "K1268", "description": "BYK 331", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K1270", "description": "BYK 320", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K1273", "description": "BYK-410 / RHEOBYK-410", "packSize": "KG", "location": "RM J"}, {"code": "K1275", "description": "HYDROCER D-336", "packSize": "DRUM", "location": "B1 A11 B & B1 A23"}, {"code": "K1276", "description": "RAVIDRI D10SR / RAVIDRI 10% STRONTIUM", "packSize": "DRUM", "location": "B1 A5 B"}, {"code": "K1277", "description": "NATROSOL 250HBR PA", "packSize": "BAG", "location": "RM B"}, {"code": "K1283", "description": "BYK 1794", "packSize": "PAIL", "location": "RM J"}, {"code": "K1285", "description": "DISPARLON EZ 777", "packSize": "PAIL", "location": "NC Store"}, {"code": "K1286", "description": "AXIMUL DSA17H", "packSize": "DRUM", "location": "B1 A13 B"}, {"code": "K1288", "description": "K-CURE 1040", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K1290", "description": "ACTICIDE MV / MERGAL MV1.5", "packSize": "IBC", "location": "CORROSIVE"}, {"code": "K1296", "description": "MMP CORROSION INHIBITOR", "packSize": "PAIL", "location": "RM J"}, {"code": "K1313", "description": "MODAFLOW RESIN", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K1320", "description": "TROYMAX 250/TROYMAX 350", "packSize": "PAIL", "location": "BUND 4"}, {"code": "Key Number", "description": "Material Description", "packSize": "Pack Size (eg. 25kg, 180KG, 1000KG)", "location": "Storage Location"}, {"code": "K1341", "description": "PERGUT B10", "packSize": "BAG", "location": "RM F"}, {"code": "K1349", "description": "ACTICIDE DB20", "packSize": "PAIL", "location": "CORROSIVES"}, {"code": "K1351", "description": "ABEX 2545", "packSize": "DRUM", "location": "B1 A20 C"}, {"code": "K1360", "description": "AEPD VOX 1000", "packSize": "DRUM", "location": "CORROSIVES"}, {"code": "K1366", "description": "AQUABEAD 525E-AM", "packSize": "DRUM", "location": "B1 A17 C"}, {"code": "K1383", "description": "ADDITOL XW 6533", "packSize": "DRUM", "location": "B1 B13 C"}, {"code": "K1385", "description": "TEXIPOL COBALT 6%", "packSize": "PAIL", "location": "RM J,K"}, {"code": "K1393", "description": "ACTICIDE MKX", "packSize": "PAIL", "location": "CORROSIVES"}, {"code": "K1396", "description": "BYK-024", "packSize": "DRUM", "location": "B1 A6 C"}, {"code": "K1397", "description": "FOAMASTER MO 2150", "packSize": "IBC", "location": "B1 B6 B"}, {"code": "K1401", "description": "TINUVIN 1130", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K1402", "description": "BAYSILONE PAINT ADDITIVE OL 17", "packSize": "DRUM", "location": "B4 B"}, {"code": "K1407", "description": "EPOXIDISED OIL/TEXIFLEX/LUNA-FLEX ESO", "packSize": "DRUM", "location": "B1 A11 A & MFG Floor"}, {"code": "K1413", "description": "HYDROPALAT WE 3189", "packSize": "IBC", "location": "B1 B8 A"}, {"code": "K1420", "description": "ACRYSOL RM-995", "packSize": "DRUM", "location": "B1 I"}, {"code": "K1421", "description": "LUMITEN AQA 10/EFKA WE 3110", "packSize": "DRUM", "location": "MFG Floor"}, {"code": "K1424", "description": "XIAMETER PMX-200 SILICONE FLUID 50CS", "packSize": "DRUM", "location": "RM J & MFG  & QC LAB RACK"}, {"code": "K1433", "description": "ACTICIDE MBS5050", "packSize": "PAIL", "location": "CORROSIVES"}, {"code": "K1444", "description": "RHODOLINE DF 6008", "packSize": "IBC", "location": "B1 I (FENCE)"}, {"code": "K1453", "description": "SOLTHIX 250", "packSize": "DRUM", "location": "B1 B15 A & MFG Floor"}, {"code": "K1455", "description": "AQUAFLOW NHS 360", "packSize": "IBC", "location": "BUND 5"}, {"code": "K1459", "description": "PHOSPHORIC ACID 25% SOLUTION", "packSize": "PAIL", "location": "CORROSIVES"}, {"code": "K1465", "description": "NUOSPERSE XL-1/80", "packSize": "DRUM", "location": "B1 A12 A"}, {"code": "K1466", "description": "OMNIRAD 500", "packSize": "PAIL", "location": "RM J,K"}, {"code": "K1473", "description": "TERGITOL 15-S-20 (80%)", "packSize": "DRUM", "location": "B1 A8 C & MFG Floor"}, {"code": "K1476", "description": "RHODOLINE DF 642 NI", "packSize": "DRUM", "location": "B1 A22 A"}, {"code": "K1480", "description": "TEXIDRI COBALT 12% SC", "packSize": "DRUM", "location": "B1 C 4 & MFG Floor"}, {"code": "K1482", "description": "ACRYSOL DR-110", "packSize": "DRUM", "location": "B1 A13 C"}, {"code": "K1483", "description": "Tylose HX6000 YG4", "packSize": "BAG", "location": "RM B"}, {"code": "K1484", "description": "GARAMITE 1958", "packSize": "BAG", "location": "RM D"}, {"code": "K1486-1000KG", "description": "MINEX 4 / NEPHELINE SYENITE", "packSize": "BULK BAG", "location": "Roller Racking"}, {"code": "K1486-25KG", "description": "MINEX 4 / NEPHELINE SYENITE", "packSize": "BAG", "location": "RM F"}, {"code": "K1487", "description": "DISPERBYK 199", "packSize": "DRUM", "location": "B1 A14 A"}, {"code": "K1493", "description": "ADDITOL VXW 6503", "packSize": "DRUM", "location": "B1 A2 A"}, {"code": "K1494", "description": "ADDITOL VXW 6208", "packSize": "PAIL", "location": "RM J  & K"}, {"code": "K1495", "description": "Foamstar ED 2522", "packSize": "IBC", "location": "QC LAB RACK 2"}, {"code": "K1504", "description": "BIOBAN ZP38 / ZINC OMADINE ZOE", "packSize": "PAIL", "location": "RM J & QC LAB RACK 2"}, {"code": "K1509", "description": "FOAMSTAR A 12/FOAMSTAR ST 2412", "packSize": "CAN", "location": "B1 A3 C"}, {"code": "K1510", "description": "TRI-ETHYLENE GLYCOL", "packSize": "DRUM", "location": "BUND 5"}, {"code": "K1526", "description": "NATRASOL 250HHBR/ 250HHR", "packSize": "BAG", "location": "RM B"}, {"code": "K1531", "description": "TIGERFAX NPE 40", "packSize": "BAG", "location": "QC LAB RACK 2"}, {"code": "K1533A", "description": "ACRYSOL RM-2020NPR", "packSize": "IBC", "location": "B1 I (FENCE)"}, {"code": "K1535", "description": "J 392G35 WAX EMULSION", "packSize": "DRUM", "location": "RM I"}, {"code": "K1539", "description": "BYK 028", "packSize": "PAIL", "location": "RM J"}, {"code": "K1542", "description": "POLYMID 125", "packSize": "DRUM", "location": "B1 C 5"}, {"code": "K1544", "description": "DISPERBYK-190", "packSize": "DRUM", "location": "B1 H 14 & B1 B16 A"}, {"code": "K1553", "description": "SKIM MILK POWDER", "packSize": "BAG", "location": "RM E"}, {"code": "K1554", "description": "MERMAID SUPERFINE SALT", "packSize": "PAIL", "location": "RM E"}, {"code": "Key Number", "description": "Material Description", "packSize": "Pack Size (eg. 25kg, 180KG, 1000KG)", "location": "Storage Location"}, {"code": "K1569", "description": "TALLOW", "packSize": "PAIL", "location": "RM J"}, {"code": "K1576", "description": "530300A RAVIALK RESIN MELAMINE/CYMEL 303", "packSize": "DRUM", "location": "B1 B15 B"}, {"code": "K1585", "description": "XIAMETER OFS 6040 SILANE", "packSize": "DRUM", "location": "CORROSIVES & MFG Floor"}, {"code": "K1591", "description": "SODIUM NITRITE", "packSize": "BAG", "location": "CABINET"}, {"code": "K1592", "description": "RENNET CASEIN 779 90 MESH", "packSize": "BAG", "location": "RM E"}, {"code": "K1601", "description": "BYK-7420 ES / RHEOBYK-7420 ES#", "packSize": "DRUM", "location": "B1 A9 A"}, {"code": "K1603", "description": "SUPERSIV 3A POWDER", "packSize": "BAG", "location": "RM C"}, {"code": "K1604", "description": "FOAMSTAR ED 2523", "packSize": "DRUM", "location": "B1 B14 B & QC LAB RACK 2"}, {"code": "K1606", "description": "POLYMID 140", "packSize": "DRUM", "location": "B1 C 6"}, {"code": "K1608", "description": "RHODOLINE WA 1801", "packSize": "DRUM", "location": "B1 B11 C"}, {"code": "K1609", "description": "DISPEX ULTRA FA4404", "packSize": "DRUM", "location": "B1 A5 C & MFG Floor"}, {"code": "K1610", "description": "OROTAN 1850E", "packSize": "DRUM", "location": "B1 A19 A"}, {"code": "K1615", "description": "DISPARLON 6700", "packSize": "BAG", "location": "RM E"}, {"code": "K1617", "description": "DISPERBYK 110", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K1622", "description": "MICROPRO 400", "packSize": "BAG", "location": "RM E & RM F"}, {"code": "K1626", "description": "BYK 392", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K1627", "description": "BYK 3550", "packSize": "KG", "location": "BUND 4"}, {"code": "K1629", "description": "DISPERBYK 2150", "packSize": "PAIL", "location": "B4 B"}, {"code": "K1632", "description": "1,2,4 TRIAZOLE", "packSize": "PAIL", "location": "B4 B"}, {"code": "K1635", "description": "LATTICE NTC-61", "packSize": "BAG", "location": "RM B"}, {"code": "K1642", "description": "BIOWET P80", "packSize": "PAIL/IBC", "location": "RM J &B1 B10C &B1 B"}, {"code": "K1645", "description": "Acticide OTE 45", "packSize": "EA", "location": "CORROSIVE"}, {"code": "K1657", "description": "TEGO AIREX 902W", "packSize": "PAIL", "location": "RM K & QC LAB RACK 2"}, {"code": "K1658", "description": "ZZZACTICIDE MBS", "packSize": "PAIL", "location": "QC LAB RACK 2"}, {"code": "K1678", "description": "GARAMITE 7305", "packSize": "BAG", "location": "RM B"}, {"code": "K1679", "description": "STRODEX KM-0VOC", "packSize": "DRUM", "location": "CORROSIVE"}, {"code": "K1684", "description": "DISPERBYK 103", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K1686", "description": "OPTIGEL WX", "packSize": "BAG", "location": "RM E"}, {"code": "K1690", "description": "PROPYLTEX 270S", "packSize": "DRUM", "location": "RM I"}, {"code": "K1691", "description": "Aquacer 539", "packSize": "DRUM", "location": "CORROSIVE"}, {"code": "K1695", "description": "BYK 038", "packSize": "PAIL", "location": "B4 B"}, {"code": "K1700", "description": "BYK-R 607 / RHEOBYK-R 607", "packSize": "PAIL", "location": "CORROSIVE"}, {"code": "K1711", "description": "HEXAMOLL DINCH", "packSize": "IBC", "location": "B1 B4 C"}, {"code": "K1714", "description": "SILRES BS 168", "packSize": "PAIL", "location": "CORROSIVE"}, {"code": "K1717", "description": "RHEOBYK-7410 ET", "packSize": "PAIL", "location": "RM J"}, {"code": "K1725", "description": "OROTAN CA2500", "packSize": "DRUM", "location": "B1 B18 C"}, {"code": "K1727", "description": "COADIS 123K", "packSize": "IBC", "location": "CORROSIVES"}, {"code": "K1729", "description": "CRODACOR BE-LQ-(AP)", "packSize": "DRUM", "location": "B1"}, {"code": "K1733", "description": "DISPERBYK 2013", "packSize": "DRUM/PAIL", "location": "B1 & B4"}, {"code": "K1741", "description": "RHEOBYK 7411 ES", "packSize": "PAIL", "location": "B4 B"}, {"code": "K1744", "description": "BENZOTRIAZOLE", "packSize": "BAG", "location": "RM I"}, {"code": "K1752", "description": "DOWSIL 52", "packSize": "DRUM", "location": "CORROSIVES"}, {"code": "K1754", "description": "EMULSOGEN 594", "packSize": "PAIL", "location": "RM J"}, {"code": "K1776", "description": "DISPERBYK 111", "packSize": "PAIL", "location": "B4 B"}, {"code": "K1778", "description": "TROYSAN MXCR", "packSize": "PAIL/IBC", "location": "RM J & BUND 1"}, {"code": "K1779", "description": "RHEOBYK 7420 CA", "packSize": "DRUM", "location": "BUND 4"}, {"code": "K1781", "description": "CHEMACURE PI-981", "packSize": "BAG", "location": "RM D"}, {"code": "K1783", "description": "RHEOBYK-7411 CA", "packSize": "PAIL", "location": "RM J"}, {"code": "Key Number", "description": "Material Description", "packSize": "Pack Size (eg. 25kg, 180KG, 1000KG)", "location": "Storage Location"}, {"code": "K1797", "description": "OXYLINK 3102A", "packSize": "KG", "location": "BUND 3"}, {"code": "K1800", "description": "CARDOLITE LITE 2562", "packSize": "DRUM", "location": "B1 C 7"}, {"code": "K1804", "description": "ARADUR 2965", "packSize": "DRUM", "location": "CORROSIVES"}, {"code": "K1806", "description": "BORCHI OXY-COAT", "packSize": "DRUM", "location": "RM J"}, {"code": "K1810", "description": "EPIKURE 340 / CARDOLITE NT-1544", "packSize": "DRUM", "location": "B1"}, {"code": "K1856", "description": "CARDOLITE NX-5556M", "packSize": "DRUM", "location": "B1 A7 C"}, {"code": "K1889", "description": "ANCAMINE 2089M", "packSize": "PAIL", "location": "CORROSIVES"}, {"code": "K1902", "description": "BORCHI DRAGON", "packSize": "PAIL", "location": "BUND 4 & RM J"}, {"code": "K1904", "description": "RDL1904", "packSize": "DRUM", "location": "B1 C 8 & MFG Floor"}, {"code": "K1910", "description": "PROPYLMATTE 31", "packSize": "CARTON", "location": "RM I"}, {"code": "K1917", "description": "TEGO FOAMEX 825", "packSize": "DRUM", "location": "B1 A12 C"}, {"code": "K1921", "description": "CALCIUM 5%", "packSize": "DRUM", "location": "B1 C 9 & MFG Floor"}, {"code": "K1922", "description": "ZINC 12%", "packSize": "DRUM", "location": "B1 C 10 & MFG Floor"}, {"code": "K1938", "description": "TEXIDRI ZIRCONIUM 12%", "packSize": "DRUM", "location": "B1 C 11 & MFG Floor"}, {"code": "K1940", "description": "ASCININ ANTI SKIN 1240", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K1942", "description": "CARDOLITE NC-558", "packSize": "DRUM", "location": "B1 C 12"}, {"code": "K1948", "description": "Propyltex 50/50B", "packSize": "PAPER DRUM", "location": "RM I 7 Roller Racking"}, {"code": "K1977", "description": "EPOLINK 2482", "packSize": "DRUM", "location": "CORROSIVE"}, {"code": "K1979", "description": "SYLOID AL-1 FP", "packSize": "BAG", "location": "RM E"}, {"code": "K1986", "description": "TYLOSE H 30000 YP2", "packSize": "BAG", "location": "RM F"}, {"code": "K1992", "description": "RHEOLATE 278", "packSize": "DRUM", "location": "B1 A10 C"}, {"code": "K2005", "description": "SETAL FS25/50", "packSize": "DRUM", "location": "B1 C 13 & B1 C 14"}, {"code": "K2006", "description": "BAYHYDROL A 2546-Z", "packSize": "DRUM", "location": "B1 A1 A"}, {"code": "K2008", "description": "ACRONAL AXR 3778 NB AP", "packSize": "DRUM/IBC", "location": "AFL & B1 H"}, {"code": "K2019", "description": "ACRONAL AA611 NB AP", "packSize": "IBC", "location": "AFL"}, {"code": "K2023", "description": "DOW CORNING 840", "packSize": "DRUM", "location": "B1 A3 C"}, {"code": "K2033", "description": "ACRONAL ECO 7069", "packSize": "IBC", "location": "BUND 3"}, {"code": "K2037A", "description": "62% SOYA/PE ALKYD", "packSize": "DRUM", "location": "STK 23 & STK 24"}, {"code": "K2038", "description": "BAYHYDROL A 2646", "packSize": "DRUM", "location": "B1 B16 B"}, {"code": "K2039", "description": "NEOREZ R-2180", "packSize": "DRUM", "location": "B1 H 11"}, {"code": "K2042", "description": "65% SOYA PE ALKYD", "packSize": "DRUM", "location": "B1 D 1 & B1 D 2"}, {"code": "K2045", "description": "CHEMOPOL 3003", "packSize": "DRUM", "location": "STK 1 & STK 8"}, {"code": "K2058", "description": "DULUX CM 168", "packSize": "DRUM", "location": "STK 2 & STK 7"}, {"code": "K2061", "description": "MAINCOTE AE-58", "packSize": "IBC", "location": "B1 H 12"}, {"code": "K2071", "description": "62% SOYA/PE ALKYD IN TOLUENE", "packSize": "DRUM", "location": "B1 D 3 & B1 D 4"}, {"code": "K2088", "description": "SETAL 82", "packSize": "IBC", "location": "B1 D 5 -6-7-8-9-10"}, {"code": "K2089", "description": "DER 671-X75/EPIKOTE 1001X75", "packSize": "DRUM", "location": "B1 D 11"}, {"code": "K2090A", "description": "PRIMAL AC-2235", "packSize": "IBC", "location": "AFL"}, {"code": "K2095", "description": "ACRONAL ECO 7660 X", "packSize": "IBC", "location": "BUND 3"}, {"code": "K2107", "description": "ADDITIVE OF", "packSize": "PAIL", "location": "B1A13A,B4B"}, {"code": "K2110", "description": "TROYSOL LACQUER ANTICRATER", "packSize": "DRUM", "location": "RM J"}, {"code": "K2120", "description": "Borchi Gol OL44", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K2122", "description": "TINUVIN 292", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K2123", "description": "STATSAFE 3000", "packSize": "CAN", "location": "B4 B & QC LAB"}, {"code": "K2135", "description": "TINUVIN 384-2", "packSize": "PAIL", "location": "B4 B"}, {"code": "K2140", "description": "TINUVIN 123", "packSize": "PAIL", "location": "RM J"}, {"code": "K2180", "description": "CYASORB UV-1164L", "packSize": "DRUM", "location": "B4 B"}, {"code": "K2191", "description": "OROTAN 165A", "packSize": "DRUM", "location": "B1 A8 B"}, {"code": "Key Number", "description": "Material Description", "packSize": "Pack Size (eg. 25kg, 180KG, 1000KG)", "location": "Storage Location"}, {"code": "K2192", "description": "RHODOLINE DF 6002", "packSize": "DRUM", "location": "B1 A15 C"}, {"code": "K2199", "description": "PREVENTOL A6", "packSize": "BAG", "location": "RM F"}, {"code": "K2202", "description": "NATROSOL PLUS 330", "packSize": "BAG", "location": "RM B"}, {"code": "K2316", "description": "SP101 - Aluminium Paste", "packSize": "PAIL", "location": "NC Store & QC LAB RACK 2"}, {"code": "K2323", "description": "Aludur KR4", "packSize": "PAIL", "location": "NC Store"}, {"code": "K2331", "description": "STAPA METALLUX R274 PASTE", "packSize": "PAIL", "location": "NC Store"}, {"code": "K2346", "description": "COPPER POWDER GOLDIP 1361-00", "packSize": "BAG", "location": "RM I"}, {"code": "K2366", "description": "STAPA METALLUX R271", "packSize": "PAIL", "location": "NC Store"}, {"code": "K2388", "description": "HYDROPELLET 1000", "packSize": "PAIL", "location": "NC Store"}, {"code": "K2394", "description": "HYDROPELLET 3500", "packSize": "PAIL", "location": "NC Store"}, {"code": "K2402", "description": "TERIC PE64", "packSize": "IBC", "location": "B1 B8 B"}, {"code": "K2408", "description": "AXIMUL DSA17PB", "packSize": "DRUM", "location": "B1 A7 B"}, {"code": "K2409", "description": "BYK P104", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K2414", "description": "RHODOLINE DP 226/40", "packSize": "DRUM", "location": "RM J & MFG Floor"}, {"code": "K2422", "description": "TERIC 164", "packSize": "IBC", "location": "B1 I (FENCE) & B1 B6 C"}, {"code": "K2427", "description": "TRITON CF-10(90%)", "packSize": "DRUM", "location": "B1 A18 B & MFG Floor"}, {"code": "K2436", "description": "TERIC N8", "packSize": "DRUM", "location": "B1 A9 B"}, {"code": "K2445", "description": "LUNA FAX 60R", "packSize": "DRUM", "location": "CORROSIVE"}, {"code": "K2462", "description": "TERIC 462", "packSize": "DRUM", "location": "B1"}, {"code": "K2466", "description": "OROTAN 681", "packSize": "DRUM", "location": "B1 A16 A"}, {"code": "K2467", "description": "TERIC X40L", "packSize": "DRUM", "location": "B1 A14 B & MFG Floor"}, {"code": "K2468", "description": "BYK P104S", "packSize": "PAIL", "location": "B4 B"}, {"code": "K2480", "description": "SF-69", "packSize": "DRUM", "location": "QC LAB RACK 2"}, {"code": "K2482", "description": "ANTI-TERRA-203", "packSize": "DRUM", "location": "B4 B"}, {"code": "K2484", "description": "OROTAN 1288", "packSize": "IBC", "location": "B1 B3 B"}, {"code": "K2489", "description": "TERIC N10", "packSize": "DRUM", "location": "B1 A9 C"}, {"code": "K2495", "description": "TERIC N40LP", "packSize": "DRUM", "location": "B1 A17 A & MFG Floor"}, {"code": "K2506", "description": "KALAMA K-FLEX DP", "packSize": "DRUM", "location": "B1 A17 B"}, {"code": "K2602", "description": "MPA 4020X", "packSize": "DRUM", "location": "B1 B13 B"}, {"code": "K2702", "description": "ACRYSOL RM-12W", "packSize": "DRUM", "location": "B1 B14 A & MFG Floor"}, {"code": "K2710", "description": "ANCAMIDE 506", "packSize": "DRUM", "location": "CORROSIVE"}, {"code": "K2718", "description": "PAINT ADDITIVE 56", "packSize": "PAIL", "location": "QC LAB RACK 2"}, {"code": "K2722", "description": "TEGO AIREX 901W", "packSize": "PAIL", "location": "RM J"}, {"code": "K2742A", "description": "ACRYSOL RM-8W", "packSize": "IBC", "location": "B1 B5 C & B1 I (FENCE)"}, {"code": "K2743", "description": "ANTI-TERRA-U", "packSize": "DRUM", "location": "B1 A21 B 7 MFG Floor"}, {"code": "K2744", "description": "SETAL 7 (RPS)", "packSize": "DRUM", "location": "B1 A10 B"}, {"code": "K2754", "description": "BYK-054 T", "packSize": "DRUM", "location": "B1 B17 A"}, {"code": "K2755", "description": "BYK-1852", "packSize": "DRUM", "location": "BUND 4 B"}, {"code": "K2763", "description": "BYK-052N", "packSize": "DRUM", "location": "B1 A22 C & MFG Floor"}, {"code": "K2764", "description": "EFKA PB 2001", "packSize": "KG", "location": "B4 B"}, {"code": "K2768", "description": "DISPERBYK-162", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K2769", "description": "ACTICIDE HHB", "packSize": "PAIL", "location": "CORROSIVES"}, {"code": "K2770", "description": "MICROWAX MPP-620VF", "packSize": "BAG", "location": "RM E"}, {"code": "K2772", "description": "OROTAN 731A", "packSize": "DRUM", "location": "B1 B3 A"}, {"code": "K2780", "description": "FOAMASTER MO 2134", "packSize": "DRUM", "location": "B1 A18 C & MFG Floor"}, {"code": "K2783", "description": "TINUVIN 400", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K2787", "description": "BYK 346", "packSize": "PAIL", "location": "B4 B14 C"}, {"code": "K2789", "description": "BYK-022", "packSize": "DRUM", "location": "B1 B17 B & BUND 4"}, {"code": "Key Number", "description": "Material Description", "packSize": "Pack Size (eg. 25kg, 180KG, 1000KG)", "location": "Storage Location"}, {"code": "K2790", "description": "TYLOSE HS 30000 YP2", "packSize": "BAG", "location": "RM A"}, {"code": "K2794", "description": "BYK-1810", "packSize": "DRUM / PAIL", "location": "BUND 4 / BUND 1"}, {"code": "K2799", "description": "RHODOLINE DF 4226", "packSize": "DRUM", "location": "B1 B16 A"}, {"code": "K2807", "description": "BYK 066N", "packSize": "DRUM", "location": "BUND 4"}, {"code": "K3008", "description": "DISPONIL FES32", "packSize": "IBC", "location": "B1 B7 A"}, {"code": "K3009", "description": "ALPEX CK450", "packSize": "BAG", "location": "RM D"}, {"code": "K3010", "description": "25%LIN.ROS.GLY PHEN", "packSize": "IBC", "location": "B1 D 12-13-14-15"}, {"code": "K3011", "description": "464-705E", "packSize": "DRUM", "location": "B1 E 13 & B1 E 14"}, {"code": "K3013", "description": "RESYDROL AY 586W/45WA", "packSize": "IBC", "location": "B1 B3 A"}, {"code": "K3013", "description": "RESYDROL AY 586W/45WA", "packSize": "DRUM", "location": "B1"}, {"code": "K3015", "description": "ACURE 500", "packSize": "PAIL", "location": "BUND 4"}, {"code": "K3016", "description": "VINYL RESIN UMOH", "packSize": "BAG", "location": "RM E"}, {"code": "K3017", "description": "ACRYSOL SCT-275", "packSize": "DRUM", "location": "B1 B10 B"}, {"code": "K3029", "description": "CARDOLITE NX2015", "packSize": "DRUM", "location": "B1 A19 B"}, {"code": "K3032", "description": "32%LIN./ROSIN/GLYC", "packSize": "DRUM", "location": "B1 E 11 & B1 E 12"}, {"code": "K3041", "description": "OPTIMA", "packSize": "IBC", "location": "AFL"}, {"code": "K3050", "description": "DURASOL 330", "packSize": "IBC", "location": "B1 E 10 & B1 E 9"}, {"code": "K3061", "description": "ACURE 550-105", "packSize": "DRUM", "location": "B1 A4 A"}, {"code": "K3062", "description": "FRJ-551", "packSize": "BAG", "location": "RM D"}, {"code": "K3065", "description": "SETAL P700/40", "packSize": "DRUM", "location": "B1 E 9"}, {"code": "K3070", "description": "DER 331 / EPIKOTE 828", "packSize": "DRUM", "location": "B1 A11 C"}, {"code": "K3081", "description": "PRIMAL MC-330EF EMULSION", "packSize": "IBC", "location": "BUND 5"}, {"code": "K3082", "description": "SETAL FL66/70", "packSize": "DRUM", "location": "B1 E 8"}, {"code": "K3094", "description": "DER 664UE/ YD904/KUKDO KD-214C", "packSize": "BAG", "location": "RM B"}, {"code": "K3103", "description": "DURASOL 362U/25RX", "packSize": "IBC", "location": "B1 E 7 & B1 I (FENCE)"}, {"code": "K3107", "description": "POLYMID 75", "packSize": "IBC", "location": "AFL"}, {"code": "K3108", "description": "PRIMAL EP-6060", "packSize": "DRUM", "location": "B1 I (FENCE)"}, {"code": "K3114", "description": "ROSIN/PENTA/ TUNG OIL  VARNISH", "packSize": "DRUM", "location": "STK 3"}, {"code": "K3115B", "description": "PRIMAL HG-3361B", "packSize": "IBC", "location": "BUND 3"}, {"code": "K3120", "description": "RAVIALK K08 (3208-63)", "packSize": "DRUM", "location": "B1 E 5 & B1 E 6"}, {"code": "K3127", "description": "MACRYNAL VSM 2706/60X", "packSize": "DRUM", "location": "RM J"}, {"code": "K3132A", "description": "PRIMAL MV-23LOA", "packSize": "IBC", "location": "AFL"}, {"code": "K3134A", "description": "MERIDIAN LATEX", "packSize": "IBC", "location": "AFL"}, {"code": "K3137", "description": "ANCAMINE 2432", "packSize": "DRUM", "location": "CORROSIVES"}, {"code": "K3154", "description": "PLIOTECH HDT16", "packSize": "IBC", "location": "AFL"}, {"code": "K3156", "description": "VISCOPOL 9250", "packSize": "IBC", "location": "B1 B7 B & B1 H 13"}, {"code": "K3166", "description": "SETAL 3265", "packSize": "DRUM", "location": "B1 A12 B & B1 A20 A"}, {"code": "K3179", "description": "CARDOLITE LITE 2001", "packSize": "DRUM", "location": "B1 E 3 & B1 I (FENCE)"}, {"code": "K3188", "description": "ANCAMIDE 2386", "packSize": "DRUM", "location": "CORROSIVES"}, {"code": "K3196", "description": "ACRYSOL TT935", "packSize": "IBC", "location": "B1 B5 B"}, {"code": "K3205", "description": "SYNOCURE 865 EEP 70", "packSize": "DRUM", "location": "B1 E 4"}, {"code": "K3206", "description": "MACRYNAL SM 510n/65BACX", "packSize": "DRUM", "location": "B1 E 1 & B1 E 2"}, {"code": "K3217", "description": "SETAL 1742/60", "packSize": "DRUM", "location": "B1 F 1 & B1 F 2"}, {"code": "K3225", "description": "DESMOPHEN 650 MPA", "packSize": "DRUM", "location": "B1 A21 C"}, {"code": "K3231", "description": "RAVIALK S29", "packSize": "DRUM", "location": "B1 F 3-4-5"}, {"code": "K3252", "description": "Shellac Soln Bleached Dewaxed 40%(w/v)", "packSize": "IBC", "location": "BUND 4"}, {"code": "K3254", "description": "SILRES BS 290", "packSize": "IBC", "location": "B1 B12 B"}, {"code": "K3269", "description": "146070A (RAVIALK K14)", "packSize": "DRUM", "location": "B1 A10 A"}, {"code": "Key Number", "description": "Material Description", "packSize": "Pack Size (eg. 25kg, 180KG, 1000KG)", "location": "Storage Location"}, {"code": "K3310", "description": "PRIMAL AC-6501EF ACRYLIC EMULSION", "packSize": "IBC", "location": "BUND 3"}, {"code": "K3314", "description": "HY 607R", "packSize": "BAG", "location": "RM B"}, {"code": "K3322-25KG", "description": "DEGALAN 6412N /PARALOID B66P /PCHEM BM66", "packSize": "BAG", "location": "RM I"}, {"code": "K3322-500KG", "description": "DEGALAN 6412N", "packSize": "BULK BAG", "location": "Roller Racking"}, {"code": "K3331", "description": "PRIMAL MC-1834R", "packSize": "DRUM", "location": "BUND 5"}, {"code": "K3338", "description": "CARDOLITE NX-5454", "packSize": "DRUM", "location": "B1 B17 C & B1 B18 B"}, {"code": "K3343", "description": "POLYMID 415", "packSize": "DRUM", "location": "B1 F 7"}, {"code": "K3345-500KG", "description": "DEGALAN 66/02N", "packSize": "BULK BAG", "location": "Roller Racking"}, {"code": "K3348", "description": "NEOCRYL HP-2100 / HP-1000", "packSize": "IBC", "location": "AFL"}, {"code": "K3349", "description": "ACRONAL 7668 NB AP", "packSize": "IBC", "location": "AFL"}, {"code": "K3351", "description": "ACRONAL DS728 AP", "packSize": "IBC", "location": "B1 H 12"}, {"code": "K3359", "description": "NEOCRYL XK350", "packSize": "DRUM", "location": "BUND 5"}, {"code": "K3365", "description": "RAVIALK L61", "packSize": "DRUM", "location": "B1 F 9"}, {"code": "K3375", "description": "ANCAMINE 1934", "packSize": "DRUM", "location": "B1 F 10"}, {"code": "K3387", "description": "SETAQUA PAVE 600", "packSize": "IBC", "location": "AFL"}, {"code": "K3388", "description": "465-712", "packSize": "DRUM", "location": "B1 F 10 & B1 F 12"}, {"code": "K3397", "description": "ACURE 510-170", "packSize": "DRUM", "location": "B1 A2 B"}, {"code": "K3422", "description": "TRITON GR-7M", "packSize": "DRUM", "location": "B1 A22 B & MFG Floor"}, {"code": "K3423", "description": "SURFYNOL 104 BC", "packSize": "PAIL", "location": "CORROSIVES"}, {"code": "K3430", "description": "AMINO METHYL PROPANOL (AMP-95)", "packSize": "IBC", "location": "CORROSIVE"}, {"code": "K3431", "description": "TERIC 10A6N", "packSize": "DRUM", "location": "CORROSIVES"}, {"code": "K3548", "description": "016561 COLORTREND YELLOW BV", "packSize": "DRUM", "location": "B1 I (FENCE)"}, {"code": "K3555", "description": "874-7225 COLORTREND PLUS BLUE XC5", "packSize": "PAIL", "location": "RM K & QC LAB TINT ROOM"}, {"code": "K3555A", "description": "010919 K3555A WB PHTHALO BLUE", "packSize": "PAIL", "location": "QC LAB TINT ROOM"}, {"code": "K3600", "description": "EBECRYL 7100", "packSize": "DRUM", "location": "B1 A16 C"}, {"code": "K3605", "description": "019010 COLORTREND E WHITE", "packSize": "DRUM", "location": "BUND 4 & QC LAB RACK 3"}, {"code": "K3620", "description": "HDDA", "packSize": "DRUM", "location": "B1 A16 B"}, {"code": "K3639", "description": "HEXAFOR 6392", "packSize": "IBC", "location": "B1 I (FENCE)"}, {"code": "K3640", "description": "EBECRYL 605", "packSize": "DRUM", "location": "B1 A5 A"}, {"code": "K3666", "description": "PRIMAL DC-5005A", "packSize": "IBC", "location": "BUND 5"}, {"code": "K3670", "description": "SETAQUA PAVE 700", "packSize": "IBC", "location": "BUND 3"}, {"code": "K3674", "description": "EBECRYL 745", "packSize": "DRUM", "location": "B1 A6 A"}, {"code": "K3693", "description": "FRONTIER LATEX", "packSize": "IBC", "location": "BUND 3"}, {"code": "K3697", "description": "LIOCRYL XAM6979", "packSize": "IBC", "location": "AFL"}, {"code": "K3699", "description": "AQACELL HIDE 6299 AP", "packSize": "IBC", "location": "P&C LAB"}, {"code": "K3713", "description": "FIN/PROD / ALTRA-LOCK 577/CONVERTER PT B", "packSize": "DRUM", "location": "B1 B13 C"}, {"code": "K4007", "description": "EPODIL LV5", "packSize": "DRUM", "location": "B1 A14 C & MFG Floor"}, {"code": "K4013", "description": "SETALUX D A 450 BA/X", "packSize": "DRUM", "location": "B1 A4 C"}, {"code": "K4015", "description": "SUNCOAT CR-10", "packSize": "BAG", "location": "AFL"}, {"code": "K4016", "description": "RAVIALK L22", "packSize": "DRUM", "location": "BUND 4"}, {"code": "K4025", "description": "MACRYNAL VSM 2155/60EPAC", "packSize": "DRUM", "location": "B1 A6 B"}, {"code": "K4028", "description": "ACROPOL 63893", "packSize": "DRUM/IBC", "location": "AFL"}, {"code": "K4041", "description": "SYNOCURE 866 EEP 75", "packSize": "DRUM", "location": "B1 A9 A"}, {"code": "K4042", "description": "ARALDITE PZ 756-1/67 BD", "packSize": "DRUM", "location": "B1 A3 A"}, {"code": "K4043", "description": "65% SOYA PENTA ALKYD IN D40", "packSize": "DRUM", "location": "B1 B12 A"}, {"code": "K4059", "description": "SILRES BS 4004", "packSize": "IBC", "location": "BUND 3"}, {"code": "K4060", "description": "RAVIALK L23", "packSize": "DRUM", "location": "BUND 4"}, {"code": "K4065", "description": "URADIL AZ765", "packSize": "IBC", "location": "B1 B"}, {"code": "Key Number", "description": "Material Description", "packSize": "Pack Size (eg. 25kg, 180KG, 1000KG)", "location": "Storage Location"}, {"code": "K4075", "description": "EBECRYL 4175", "packSize": "DRUM", "location": "B1 A8 A & CORROSIVES"}, {"code": "K4080", "description": "OTA 480", "packSize": "BAG", "location": "B1 A13 A"}, {"code": "K4083", "description": "DECOVERY SP-8030", "packSize": "IBC", "location": "BUND 3"}, {"code": "K4093", "description": "GENIOSIL GF93", "packSize": "DRUM", "location": "CORROSIVES & QC LAB RACK"}, {"code": "K4108", "description": "GASIL HP 270", "packSize": "BAG", "location": "RM E"}, {"code": "K4111", "description": "SYLOWHITE SM 405", "packSize": "BAG", "location": "RM E & RM F"}, {"code": "K4116-25KG", "description": "TALC A325", "packSize": "BAG", "location": "RM A"}, {"code": "K4119", "description": "ACEMATT 3300", "packSize": "BAG", "location": "RM F"}, {"code": "K4123-25KG", "description": "AIHAI TALC VERmax V30", "packSize": "BAG", "location": "RM A"}, {"code": "K4129", "description": "TIOXIDE TR81", "packSize": "BAG", "location": "RM F"}, {"code": "K4140", "description": "HALOX SZP-391", "packSize": "BAG", "location": "RM E"}, {"code": "K4141", "description": "810-0018 TITANIUM WHITE KX", "packSize": "PAIL", "location": "RM K"}, {"code": "K4144-25KG", "description": "OMYACARB 2", "packSize": "BAG", "location": "RM A"}, {"code": "K4153-20KG", "description": "TIONA RCL-3", "packSize": "BAG", "location": "RM D"}, {"code": "K4176", "description": "BENTONE AD", "packSize": "BAG", "location": "RM B"}, {"code": "K4179", "description": "BLANC FIXE MICRO", "packSize": "BAG", "location": "RM D"}, {"code": "K4183-25KG", "description": "Zinc Phosphate PZ 20", "packSize": "BAG", "location": "RM A"}, {"code": "K4208", "description": "CLAYTONE HY", "packSize": "BAG", "location": "RM B"}, {"code": "K4209", "description": "9420061 AK942 WHITE D25", "packSize": "CAN", "location": "BUND 4"}, {"code": "K4217", "description": "URALAC SY944", "packSize": "DRUM", "location": "RM J"}, {"code": "K4290", "description": "CLAYTONE AF", "packSize": "BAG", "location": "RM E"}, {"code": "K4502", "description": "788-1062 VIVID YELLOW CONC", "packSize": "DRUM", "location": "RM S"}, {"code": "K4517", "description": "YELLOW OXIDE WR 305", "packSize": "PAIL", "location": "RM K"}, {"code": "K4519", "description": "BAYFERROX 960", "packSize": "BAG", "location": "RM C"}, {"code": "K4522", "description": "9422803 AK942 YELLOW D32", "packSize": "CAN", "location": "BUND 4"}, {"code": "K4525", "description": "9420925 AK942 ORANGE D26", "packSize": "CAN", "location": "BUND 4"}, {"code": "K4606", "description": "788-1011 VIVID RED CONC", "packSize": "DRUM", "location": "QC LAB RACK 3"}, {"code": "K4608", "description": "RED OXIDE WR306", "packSize": "PAIL", "location": "RM K"}, {"code": "K4610", "description": "IRON OXIDE RED RO2597", "packSize": "BAG", "location": "RM C"}, {"code": "K6101", "description": "MICA 325WG", "packSize": "BAG", "location": "RM F"}, {"code": "K6113", "description": "LIMESTONE T GRADE MV", "packSize": "BAG", "location": "RM F"}, {"code": "K6114-25KG", "description": "MINEX 7 / NEPHELINE SYENITE", "packSize": "BAG", "location": "RM F"}, {"code": "K6114-500KG", "description": "MINEX 7 / NEPHELINE SYENITE", "packSize": "BULK BAG", "location": "Roller Racking"}, {"code": "K6122", "description": "ACTI-MIN CROWN CLAY (MICROB)", "packSize": "BAG", "location": "No location assigned"}, {"code": "XBAGC10A-1000KG", "description": "INTERIOR GLOSS CLEAR BASE 1000KG", "packSize": "IBC", "location": "BUND 3"}];
+const ADMIN_PIN = '2222';
+
+const searchInput = document.getElementById('searchInput');
+const searchBtn = document.getElementById('searchBtn');
+const clearBtn = document.getElementById('clearBtn');
+const resultArea = document.getElementById('resultArea');
+const gearBtn = document.getElementById('gearBtn');
+const pinOverlay = document.getElementById('pinOverlay');
+const pinInput = document.getElementById('pinInput');
+const pinErr = document.getElementById('pinErr');
+const pinOk = document.getElementById('pinOk');
+const pinCancel = document.getElementById('pinCancel');
+const adminOverlay = document.getElementById('adminOverlay');
+const adminLockBtn = document.getElementById('adminLockBtn');
+const adminFilter = document.getElementById('adminFilter');
+const adminList = document.getElementById('adminList');
+const adminCountBar = document.getElementById('adminCountBar');
+
+function doSearch() {
+  const q = searchInput.value.trim().toUpperCase();
+  if (!q) return;
+
+  let found = MATERIALS.find(m => m.code.toUpperCase() === q);
+  if (!found) {
+    const partial = MATERIALS.filter(m =>
+      m.code.toUpperCase().includes(q) || m.description.toUpperCase().includes(q)
+    );
+    if (partial.length === 1) found = partial[0];
+  }
+
+  if (found) {
+    const locations = found.location.split('&').map(l => l.trim()).filter(l => l);
+    let locHTML = '';
+    const isNoLoc = found.location === 'No location assigned';
+    if (isNoLoc) {
+      locHTML = '<div class="no-loc"><div class="loc-label">LOCATION</div><div class="loc-text">No location assigned</div></div>';
+    } else if (locations.length === 1) {
+      locHTML = '<div class="loc-box"><div class="loc-label">LOCATION</div><div class="loc-text">' + locations[0] + '</div></div>';
+    } else {
+      locHTML = locations.map(function(loc, i) {
+        return '<div class="loc-box"><div class="loc-label">LOCATION ' + (i + 1) + '</div><div class="loc-text">' + loc + '</div></div>';
+      }).join('');
+    }
+    resultArea.innerHTML = '<div class="result-card">'
+      + '<div class="result-code">' + found.code + '</div>'
+      + '<div class="result-desc">' + found.description + '</div>'
+      + '<div class="result-pack"><span>Pack Size:</span> ' + found.packSize + '</div>'
+      + locHTML
+      + '</div>';
+  } else {
+    resultArea.innerHTML = '<div class="not-found-card">'
+      + '<div class="not-found-title">Not Found</div>'
+      + '<div class="not-found-sub">No material matches "' + searchInput.value.trim() + '"</div>'
+      + '</div>';
+  }
+  clearBtn.classList.add('show');
+}
+
+function clearSearch() {
+  searchInput.value = '';
+  resultArea.innerHTML = '';
+  clearBtn.classList.remove('show');
+  searchInput.focus();
+}
+
+searchBtn.addEventListener('click', doSearch);
+searchInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') doSearch(); });
+clearBtn.addEventListener('click', clearSearch);
+
+gearBtn.addEventListener('click', function() {
+  pinOverlay.classList.add('active');
+  pinInput.value = '';
+  pinErr.classList.remove('show');
+  setTimeout(function() { pinInput.focus(); }, 100);
+});
+
+function tryPin() {
+  if (pinInput.value === ADMIN_PIN) {
+    pinOverlay.classList.remove('active');
+    adminOverlay.classList.add('active');
+    pinInput.value = '';
+    pinErr.classList.remove('show');
+    adminFilter.value = '';
+    renderAdminList('');
+  } else {
+    pinErr.classList.add('show');
+    pinInput.value = '';
+  }
+}
+
+pinOk.addEventListener('click', tryPin);
+pinInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') tryPin(); });
+pinCancel.addEventListener('click', function() {
+  pinOverlay.classList.remove('active');
+  pinInput.value = '';
+  pinErr.classList.remove('show');
+});
+
+adminLockBtn.addEventListener('click', function() {
+  adminOverlay.classList.remove('active');
+});
+
+function renderAdminList(filter) {
+  const q = filter.toUpperCase();
+  const filtered = MATERIALS.filter(function(m) {
+    if (!q) return true;
+    return m.code.toUpperCase().includes(q) || m.description.toUpperCase().includes(q);
+  });
+  adminCountBar.textContent = filtered.length + ' of ' + MATERIALS.length;
+  if (filtered.length === 0) {
+    adminList.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);font-size:18px;font-weight:700;">No matches</div>';
+    return;
+  }
+  let html = '';
+  filtered.forEach(function(m) {
+    const locs = m.location.split('&').map(function(l) { return l.trim(); }).filter(function(l) { return l; });
+    const locTags = locs.map(function(l) { return '<span class="admin-row-tag loc">📍 ' + l + '</span>'; }).join('');
+    html += '<div class="admin-row">'
+      + '<div class="admin-row-code">' + m.code + '</div>'
+      + '<div class="admin-row-desc">' + m.description + '</div>'
+      + '<div class="admin-row-meta"><span class="admin-row-tag pack">📦 ' + m.packSize + '</span>' + locTags + '</div>'
+      + '</div>';
+  });
+  adminList.innerHTML = html;
+}
+
+adminFilter.addEventListener('input', function() { renderAdminList(adminFilter.value); });
+</script>
+</body>
+</html>
